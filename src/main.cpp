@@ -13,27 +13,27 @@
 
 // Estrutura da mensagem enviada pelo transmissor (load_cell_RF)
 typedef struct struct_message {
-  char labelA[32];     // "Filtered Mass:"
-  float filteredMass;  // Massa filtrada em gramas
-  char labelC[32];     // "Raw Mass:"
-  float rawMass;       // Massa bruta em gramas
+  float timestamp_s;       // Timestamp da coleta [s]
+  float load_cell_1_g;     // Massa célula 1 [g]
+  float load_cell_2_g;     // Massa célula 2 [g]
+  float thermocouple_1_c;  // Temperatura termopar 1 [°C]
+  float thermocouple_2_c;  // Temperatura termopar 2 [°C]
 } struct_message;
 
 struct_message myData;
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  if (len != sizeof(myData)) {
+    Serial.printf("Tamanho inesperado: %d bytes (esperado %d)\n", len, (int)sizeof(myData));
+    return;
+  }
   memcpy(&myData, incomingData, sizeof(myData));
-  Serial.print("Data received: ");
-  Serial.println(len);
-  Serial.print(myData.labelA);
-  Serial.print(" ");
-  Serial.print(myData.filteredMass, 3);
-  Serial.println(" g");
-  Serial.print(myData.labelC);
-  Serial.print(" ");
-  Serial.print(myData.rawMass, 3);
-  Serial.println(" g");
-  Serial.println();
+  Serial.printf("%.3fs  LC1:%7.1fg  LC2:%7.1fg  TC1:%5.1fC  TC2:%5.1fC\n",
+    myData.timestamp_s,
+    myData.load_cell_1_g,
+    myData.load_cell_2_g,
+    myData.thermocouple_1_c,
+    myData.thermocouple_2_c);
 }
 
 void setup() {
